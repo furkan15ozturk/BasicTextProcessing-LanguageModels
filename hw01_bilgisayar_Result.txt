@@ -220,7 +220,7 @@ Unigrams Sorted wrt Frequencies (from Higher to Lower Frequencies):
 ('hepsi',): ( 1,   0.0031545741324921135 )
 ('aynı',): ( 1,   0.0031545741324921135 )
 ('getirebilir',): ( 1,   0.0031545741324921135 )
-('unk', 'unk'): ( 0,   0.004608294930875576 )
+('unk',): ( 0,   0 )
 
 Bigrams Sorted wrt Frequencies (from Higher to Lower Frequencies):
 ('<s>', 'bu'): ( 3,   0.15789473684210525 )
@@ -515,7 +515,7 @@ Bigrams Sorted wrt Frequencies (from Higher to Lower Frequencies):
 ('aynı', 'görevleri'): ( 1,   1.0 )
 ('yerine', 'getirebilir'): ( 1,   0.3333333333333333 )
 ('getirebilir', '<\\s>'): ( 1,   1.0 )
-('unk', 'unk'): ( 0,   0.004608294930875576 )
+('unk', 'unk'): ( 0,   0 )
 
 Top 100 Bigrams wrt SmoothedProbability (from Higher to Lower):
 ('görevleri', 'yerine'): ( 0.02262443438914027,   1.0 )

@@ -54,7 +54,7 @@ def third_step(sentence, text):
 
 if __name__ == "__main__":
 
-    with open("hw01_bilgisayar.txt", "r", encoding="utf-8") as file:
+    with open("hw01_tinytr.txt", "r", encoding="utf-8") as file:
         text = file.read()
 
     sentence_count, token_count, vocab_size, unigram_prob, bigram_prob = first_step(text)
@@ -66,8 +66,7 @@ if __name__ == "__main__":
 
     prob_of_sentence_1 = third_step(sample_sentence_1, text)
     prob_of_sentence_2 = third_step(sample_sentence_2, text)
-    print(prob_of_sentence_1)
-    file_name = "hw01_bilgisayar_Result.txt"
+    file_name = "hw01_tinytr_Result.txt"
     with open(file_name, "w", encoding="utf-8") as f:
 
         f.write(f"Number of Sentences in File: {sentence_count}\n")
