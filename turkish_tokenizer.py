@@ -97,36 +97,6 @@ class TurkishTokenizer:
         return sorted_ngrams
 
     @staticmethod
-    def ngram_probabilities(text, add_k_smoothing = True, k = 1, n = 1):
-        ngrams = TurkishTokenizer.n_gram(text, n)
-        sorted_ngrams = TurkishTokenizer.sort_ngrams(ngrams)
-        vocab_size = len(TurkishTokenizer.vocab(text))
-        tokens = TurkishTokenizer.word_tokenizer(text)
-        total_words = len(tokens)
-        if n > 1:
-            context_counts = Counter(TurkishTokenizer.n_gram(text, n - 1))
-        else:
-            context_counts = Counter(ngrams)
-
-        # Calculate n-gram probabilities
-        ngram_probs = {}
-        for ngram, count in sorted_ngrams:
-            context = ngram[:n - 1] if n > 1 else ngram
-            if n == 1:
-                probability = count / total_words
-                k_smoothed_probability = (count * k) / (total_words + k * vocab_size)
-            else:
-                probability = count / context_counts[context]
-                k_smoothed_probability = (count * k) / (context_counts[context] + k * vocab_size)
-            if add_k_smoothing:
-                ngram_probs[ngram] = (count, k_smoothed_probability, probability)
-            else:
-                ngram_probs[ngram] = (count, probability)
-
-        ngram_probs[('unk', 'unk')] = (0, k/(k*vocab_size), 0)
-        return ngram_probs
-
-    @staticmethod
     def replace_unk(text):
         word_frequencies = TurkishTokenizer.vocab_freq(text)
 
@@ -139,32 +109,73 @@ class TurkishTokenizer:
         del word_frequencies[min_token]
         return text
 
+
     @staticmethod
-    def prob_of_a_given_corpus(text, ngram_prob, vocabulary, n=1):
+    def ngram_probabilities(text, add_k_smoothing = True, k = 1, n = 1):
+        ngrams = TurkishTokenizer.n_gram(text, n)
+        sorted_ngrams = TurkishTokenizer.sort_ngrams(ngrams)
+        vocab_size = len(TurkishTokenizer.vocab(text))
+        tokens = TurkishTokenizer.word_tokenizer(text)
+        total_words = len(tokens)
+        if n > 1:
+            context_counts = Counter(TurkishTokenizer.n_gram(text, n - 1))
+        else:
+            context_counts = Counter(ngrams)
+
+        ngram_probs = {}
+        for ngram, count in sorted_ngrams:
+            context = ngram[:n - 1] if n > 1 else ngram
+            if n == 1:
+                probability = count / total_words
+                k_smoothed_probability = (count + k) / (total_words + k * vocab_size)
+            else:
+                probability = count / context_counts[context]
+                k_smoothed_probability = (count + k) / (context_counts[context] + k * vocab_size)
+            if add_k_smoothing:
+                ngram_probs[ngram] = (count, k_smoothed_probability, probability)
+            else:
+                ngram_probs[ngram] = (count, probability)
+
+        ngram_probs[('unk', 'unk')] = (0, k/(k*vocab_size), 0)
+        return ngram_probs
+
+    @staticmethod
+    def prob_of_a_given_corpus(text, ngram_prob, vocabulary, k=1, n=1):
         processed_text = TurkishTokenizer.preprocess_text(text)
-        print(processed_text)
-        ngrams = TurkishTokenizer.n_gram(processed_text, n)  # Generate bigrams (n=2)
-        print(ngrams)
+        ngrams = TurkishTokenizer.n_gram(processed_text, n)
+        sorted_ngrams = TurkishTokenizer.sort_ngrams(ngrams)
+        vocab_size = len(TurkishTokenizer.vocab(text))
+
+        if n > 1:
+            context_counts = Counter(TurkishTokenizer.n_gram(text, n - 1))
+        else:
+            context_counts = Counter(ngrams)
 
         total_probability = 1.0
 
         for ngram in ngrams:
-            # Check if the n-gram exists in the ngram_prob
             probability = 1.0
+
             if ngram in ngram_prob:
-                # If found, get the probability
-                probability = ngram_prob[ngram][1]  # Second value is the probability
-                print(f"Probability of {ngram}: {probability}")
+                probability = ngram_prob[ngram][1]
+
             else:
                 updated_ngram = tuple('unk' if word not in vocabulary else word for word in ngram)
-                try:
-                    probability = ngram_prob[updated_ngram][1]  # Second value is the probability
-                except:
-                    print(f"Probability of {updated_ngram}: 0")
-                print(f"Probability of {updated_ngram}: {probability}")
+                ngram_dict = dict(sorted_ngrams)
+
+                if ngram in ngram_dict:
+                    count = ngram_dict[ngram]
+                else:
+                    count = 0
+                if updated_ngram[0] in vocabulary and updated_ngram[1] == 'unk':
+                    context = updated_ngram[0]
+                    probability = (count + k) / (context_counts[context] + k * vocab_size)
+
+                elif updated_ngram[0] == 'unk' and updated_ngram[1] in vocabulary:
+                    context = updated_ngram[1]
+                    probability = (count + k) / (context_counts[context] + k * vocab_size)
 
 
-            # Update the total probability (assuming independence of events)
             total_probability *= probability
 
         return total_probability
